@@ -231,17 +231,17 @@ $categories = $stmt->fetchAll();
                                     <td>RM <?php echo number_format($product['product_price'], 2); ?></td>
                                     <td>
                                         <span class="status-badge <?php echo $product['product_status'] === 'Available' ? 'status-completed' : 'status-pending'; ?>">
-                                        <span style="background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 4px;">✏️ Edit</span>
+                                            <?php echo $product['product_status']; ?>
                                         </span>
                                     </td>
                                     <td>
-                                        <button class="btn btn-secondary" onclick="editProduct(<?php echo htmlspecialchars(json_encode($product)); ?>)" style="font-size: 0.875rem; margin-right: 0.5rem;">
-                                            🗑️ Delete
+                                        <button class="btn" onclick="editProduct(<?php echo htmlspecialchars(json_encode($product)); ?>)" style="background: #28a745; color: white; font-size: 0.875rem; margin-right: 0.5rem; border-radius: 6px; border: none; padding: 0.5rem 1rem;">
+                                            ✏️ Edit
                                         </button>
                                         <form method="POST" style="display: inline-block;">
                                             <input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
                                             <button type="submit" name="delete_product" class="btn btn-danger" style="font-size: 0.875rem;" onclick="return confirm('Are you sure?')">
-                                                Delete
+                                                🗑️ Delete
                                             </button>
                                         </form>
                                     </td>
