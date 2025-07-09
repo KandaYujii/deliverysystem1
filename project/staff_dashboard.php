@@ -226,6 +226,36 @@ $riders = $stmt->fetchAll();
     </div>
 </div>
 
+<!-- Payment Proof Modal -->
+<div id="payment-proof-modal" class="payment-proof-modal">
+    <div class="payment-proof-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>💳 Payment Proof</h3>
+            <span class="close" onclick="closePaymentProof()" style="font-size: 2rem; cursor: pointer;">&times;</span>
+        </div>
+        <img id="payment-proof-image" src="" alt="Payment Proof" style="max-width: 100%; max-height: 400px; border-radius: 10px;">
+    </div>
+</div>
+
+<script>
+function viewPaymentProof(imagePath) {
+    document.getElementById('payment-proof-image').src = imagePath;
+    document.getElementById('payment-proof-modal').style.display = 'block';
+}
+
+function closePaymentProof() {
+    document.getElementById('payment-proof-modal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('payment-proof-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+
 </body>
 <script src="js/main.js"></script>
 </html>

@@ -216,7 +216,6 @@ function editProduct(product) {
     document.getElementById('edit_product_name').value = product.product_name;
     document.getElementById('edit_product_info').value = product.product_info;
     document.getElementById('edit_product_price').value = product.product_price;
-    document.getElementById('edit_product_status').value = product.product_status;
     document.getElementById('edit_existing_image').value = product.product_image || '';
     
     // Show current image preview

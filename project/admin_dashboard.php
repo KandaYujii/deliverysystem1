@@ -505,11 +505,19 @@ $categories = $stmt->fetchAll();
         <form method="POST" enctype="multipart/form-data">
             <input type="hidden" id="edit_product_id" name="product_id">
             <input type="hidden" id="edit_existing_image" name="existing_image">
-            <input type="hidden" id="edit_product_category" name="product_category">
             
             <div class="form-group">
                 <label for="edit_product_name">Product Name</label>
                 <input type="text" id="edit_product_name" name="product_name" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="edit_product_category">Category</label>
+                <select id="edit_product_category" name="product_category" class="form-control" required>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?php echo $category['category_name']; ?>"><?php echo $category['category_icon']; ?> <?php echo $category['category_name']; ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
             
             <div class="form-group">

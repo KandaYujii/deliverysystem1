@@ -22,6 +22,7 @@ if (isset($_POST['checkout'])) {
     $payment_method = $_POST['payment_method'];
     $cart_items = json_decode($_POST['cart_items'], true);
     $total_price = $_POST['total_price'];
+    $payment_proof = null;
     
     // Add delivery fee
     $delivery_fee = 5.00;
@@ -38,8 +39,8 @@ if (isset($_POST['checkout'])) {
     }
     
     // Create order
-    $stmt = $pdo->prepare("INSERT INTO orders (cust_id, order_date, order_status, total_price, delivery_status, payment_method) VALUES (?, NOW(), 'Pending', ?, 0, ?)");
-    $stmt->execute([$_SESSION['user_id'], $total_price, $payment_method]);
+    $stmt = $pdo->prepare("INSERT INTO orders (cust_id, order_date, order_status, total_price, delivery_status, payment_method, payment_proof) VALUES (?, NOW(), 'Pending', ?, 0, ?, ?)");
+    $stmt->execute([$_SESSION['user_id'], $total_price, $payment_method, $payment_proof]);
     $order_id = $pdo->lastInsertId();
     
     // Add order details
@@ -52,12 +53,17 @@ if (isset($_POST['checkout'])) {
     
     // Handle QR payment proof upload
     if ($payment_method === 'qr' && isset($_FILES['payment_proof'])) {
-        $upload_dir = 'uploads/';
+        $upload_dir = 'uploads/payment_proofs/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
         $file_name = $order_id . '_' . time() . '_' . $_FILES['payment_proof']['name'];
         $upload_path = $upload_dir . $file_name;
         
         if (move_uploaded_file($_FILES['payment_proof']['tmp_name'], $upload_path)) {
-            // You can store the file path in a separate table or add a column to orders table
+            // Update order with payment proof path
+            $stmt = $pdo->prepare("UPDATE orders SET payment_proof = ? WHERE order_id = ?");
+            $stmt->execute([$upload_path, $order_id]);
         }
     }
     
@@ -132,9 +138,6 @@ $categories = $stmt->fetchAll();
             <div class="dashboard-tabs">
                 <button class="tab-btn active" onclick="showTab('home')">🏠 Home</button>
                 <button class="tab-btn" onclick="showTab('menu')">📋 Menu</button>
-                <?php foreach ($categories as $category): ?>
-                    <button class="tab-btn" onclick="showTab('category-<?php echo $category['category_id']; ?>')"><?php echo $category['category_icon']; ?> <?php echo $category['category_name']; ?></button>
-                <?php endforeach; ?>
                 <button class="tab-btn" onclick="showTab('about')">ℹ️ About Us</button>
                 <button class="tab-btn" onclick="showTab('profile')">👤 Profile</button>
                 <button class="tab-btn" onclick="showTab('cart')">🛒 Cart</button>
@@ -256,27 +259,16 @@ $categories = $stmt->fetchAll();
             
             <!-- Menu Tab -->
             <div id="menu" class="tab-content">
-                <h2>🍽️ Our Complete Menu</h2>
-                <div class="menu-grid">
-                    <?php foreach ($products as $product): ?>
-                        <div class="menu-item">
-                            <div class="menu-item-image">
-                                <?php if ($product['product_image'] && file_exists($product['product_image'])): ?>
-                                    <img src="<?php echo $product['product_image']; ?>" alt="<?php echo htmlspecialchars($product['product_name']); ?>" style="width: 100%; height: 100%; object-fit: cover;">
-                                <?php else: ?>
-                                    🍔
-                                <?php endif; ?>
-                            </div>
-                            <div class="menu-item-content">
-                                <h3><?php echo htmlspecialchars($product['product_name']); ?></h3>
-                                <p><?php echo htmlspecialchars($product['product_info']); ?></p>
-                                <div class="menu-item-price">RM <?php echo number_format($product['product_price'], 2); ?></div>
-                                <div class="menu-item-actions">
-                                    <button class="btn btn-primary" onclick="addToCart('<?php echo $product['product_id']; ?>', '<?php echo htmlspecialchars($product['product_name']); ?>', '<?php echo $product['product_price']; ?>')">
-                                        Add to Cart
-                                    </button>
-                                </div>
-                            </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2>🍽️ Choose Your Category</h2>
+                </div>
+                
+                <!-- Category Selection -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <?php foreach ($categories as $category): ?>
+                        <div class="category-card" onclick="showTab('category-<?php echo $category['category_id']; ?>')" style="background: linear-gradient(135deg, #8B4513, #A0522D); color: white; padding: 2rem; border-radius: 15px; text-align: center; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; box-shadow: 0 5px 15px rgba(139,69,19,0.3);" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(139,69,19,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 5px 15px rgba(139,69,19,0.3)'">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;"><?php echo $category['category_icon']; ?></div>
+                            <h3 style="margin: 0; font-weight: 600;"><?php echo $category['category_name']; ?></h3>
                         </div>
                     <?php endforeach; ?>
                 </div>
